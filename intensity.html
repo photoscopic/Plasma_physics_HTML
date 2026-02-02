@@ -1,0 +1,356 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Laser Intensity, a₀ & Plasma Quick Sheet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system;
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #fafafa;
+    }
+
+    h2 { margin-bottom: 6px; }
+
+    .subtitle {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 18px;
+      line-height: 1.35;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 720px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .input-box {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      background: #1f6ae1;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover { background: #1856b8; }
+
+    .out {
+      margin-top: 22px;
+      padding: 18px;
+      background: #f1f4f8;
+      border-radius: 14px;
+    }
+
+    .section-title {
+      font-weight: 800;
+      margin: 6px 0 12px;
+    }
+
+    .val {
+      font-size: 15px;
+      margin: 8px 0;
+      line-height: 1.35;
+    }
+
+    code {
+      background: rgba(0,0,0,0.05);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #444;
+      margin-top: 12px;
+      line-height: 1.35;
+    }
+
+    .warn {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff3cd;
+      color: #664d03;
+      font-size: 13px;
+      line-height: 1.35;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Laser + Plasma Quick Sheet</h2>
+<div class="subtitle">
+  Laser: uses <code>I = 4E / (π w₀² τ)</code> and computes <b>a₀</b>.<br>
+  Plasma: add <b>nₑ</b> and it computes <b>n_c</b>, <b>ω_pe</b>, <b>λ_p</b>, <b>skin depth</b>, <b>U_p</b>, <b>T_hot</b>, and <b>radiation pressure</b>.
+</div>
+
+<div class="grid">
+
+  <div class="input-box">
+    <label>Wavelength λ (nm)</label>
+    <input id="lam_nm" type="number" step="any" value="800">
+  </div>
+
+  <div class="input-box">
+    <label>Pulse Energy E (J)</label>
+    <input id="E_J" type="number" step="any" value="15">
+  </div>
+
+  <div class="input-box">
+    <label>Pulse duration τ (fs, FWHM)</label>
+    <input id="tau_fs" type="number" step="any" value="24">
+  </div>
+
+  <div class="input-box">
+    <label>Focal spot diameter (µm, treated as w₀ radius)</label>
+    <input id="D_um" type="number" step="any" value="4.0">
+  </div>
+
+  <div class="input-box">
+    <label>Electron density nₑ</label>
+    <input id="ne_val" type="number" step="any" value="100">
+    <div class="note" style="margin-top:8px;">
+      Interpreted using the unit selector at right.
+    </div>
+  </div>
+
+  <div class="input-box">
+    <label>nₑ units</label>
+    <select id="ne_unit">
+      <option value="1e18">×10¹⁸ cm⁻³</option>
+      <option value="1e19">×10¹⁹ cm⁻³</option>
+      <option value="1e20" selected>×10²⁰ cm⁻³</option>
+      <option value="1e21">×10²¹ cm⁻³</option>
+      <option value="cm3">cm⁻³ (absolute)</option>
+    </select>
+    <div class="note" style="margin-top:8px;">
+      Example: 100 with “×10²⁰ cm⁻³” → 1×10²² cm⁻³.
+    </div>
+  </div>
+
+</div>
+
+<button onclick="calc()">Calculate</button>
+
+<div class="warn" id="warn_box"></div>
+
+<div class="out">
+  <div class="section-title">Laser</div>
+  <div class="val" id="I_out"><b>Peak Intensity:</b> —</div>
+  <div class="val" id="a0_out"><b>a₀:</b> —</div>
+
+  <div class="section-title" style="margin-top:16px;">Plasma (from nₑ and λ)</div>
+  <div class="val" id="nc_out"><b>Critical density n<sub>c</sub>:</b> —</div>
+  <div class="val" id="ratio_out"><b>nₑ / n<sub>c</sub>:</b> —</div>
+  <div class="val" id="wpe_out"><b>ω<sub>pe</sub>, f<sub>pe</sub>:</b> —</div>
+  <div class="val" id="lp_out"><b>Plasma wavelength λ<sub>p</sub>:</b> —</div>
+  <div class="val" id="skin_out"><b>Skin depth δ = c/ω<sub>pe</sub>:</b> —</div>
+
+  <div class="section-title" style="margin-top:16px;">Quick scalings</div>
+  <div class="val" id="up_out"><b>Ponderomotive energy U<sub>p</sub>:</b> —</div>
+  <div class="val" id="th_out"><b>Hot electron scale (Wilks):</b> —</div>
+  <div class="val" id="prad_out"><b>Radiation pressure (≈ 2I/c):</b> —</div>
+
+  <div class="note">
+    Assumes Gaussian beam and pulse.<br>
+    Spot “diameter” is treated as <b>w₀ (radius)</b> to match your current logic.<br>
+    Plasma formulas assume electron plasma frequency (cold, unmagnetized).
+  </div>
+</div>
+
+<script>
+function fmtSci(x, sig = 3) {
+  if (!isFinite(x)) return "—";
+  return x.toExponential(sig);
+}
+
+function fmtEng(x, unit) {
+  if (!isFinite(x)) return "—";
+  return `${x.toFixed(3)} ${unit}`;
+}
+
+function get_ne_cm3() {
+  const v = parseFloat(document.getElementById("ne_val").value);
+  const u = document.getElementById("ne_unit").value;
+
+  if (!isFinite(v) || v <= 0) return NaN;
+
+  if (u === "cm3") return v;
+
+  // u is a multiplier like 1e20, meaning v * 1e20 cm^-3
+  const mult = parseFloat(u);
+  return v * mult;
+}
+
+function warn(msg) {
+  const box = document.getElementById("warn_box");
+  if (!msg) {
+    box.style.display = "none";
+    box.textContent = "";
+  } else {
+    box.style.display = "block";
+    box.textContent = msg;
+  }
+}
+
+function calc() {
+  const lam_nm = parseFloat(document.getElementById("lam_nm").value);
+  const E_J    = parseFloat(document.getElementById("E_J").value);
+  const tau_fs = parseFloat(document.getElementById("tau_fs").value);
+  const D_um   = parseFloat(document.getElementById("D_um").value);
+
+  const ne_cm3 = get_ne_cm3();
+
+  if ([lam_nm, E_J, tau_fs, D_um].some(v => !isFinite(v) || v <= 0)) {
+    document.getElementById("I_out").innerHTML =
+      "<b>Peak Intensity:</b> Please enter positive values.";
+    document.getElementById("a0_out").innerHTML = "<b>a₀:</b> —";
+    warn("");
+    return;
+  }
+  if (!isFinite(ne_cm3) || ne_cm3 <= 0) {
+    warn("Please enter a positive electron density nₑ.");
+  } else {
+    warn("");
+  }
+
+  // ---------- Constants ----------
+  const c  = 2.99792458e8;          // m/s
+  const e  = 1.602176634e-19;       // C
+  const me = 9.1093837015e-31;      // kg
+  const eps0 = 8.8541878128e-12;    // F/m
+
+  // ---------- Unit conversions ----------
+  const lam_um = lam_nm * 1e-3;     // nm → µm
+  const lam_m  = lam_nm * 1e-9;     // nm → m
+  const w0_m   = D_um * 1e-6;       // µm → m (USED AS RADIUS)
+  const tau_s  = tau_fs * 1e-15;    // fs → s
+
+  // ---------- Intensity (YOUR LOGIC) ----------
+  const I_Wm2  = 4.0 * E_J / (Math.PI * w0_m * w0_m * tau_s);
+  const I_Wcm2 = I_Wm2 / 1e4;
+
+  // ---------- a0 ----------
+  const I18 = I_Wcm2 / 1e18;
+  const a0  = 0.855 * Math.sqrt(Math.max(I18, 0)) * lam_um;
+
+  document.getElementById("I_out").innerHTML =
+    `<b>Peak Intensity:</b> ${fmtSci(I_Wcm2)} W/cm²`;
+  document.getElementById("a0_out").innerHTML =
+    `<b>a₀:</b> ${isFinite(a0) ? a0.toFixed(2) : "—"}`;
+
+  // ---------- Plasma calculations ----------
+  if (isFinite(ne_cm3) && ne_cm3 > 0) {
+    const ne_m3 = ne_cm3 * 1e6;  // cm^-3 → m^-3
+
+    // Critical density: n_c = eps0 * me * (2πc/λ)^2 / e^2
+    const omega0 = 2.0 * Math.PI * c / lam_m;
+    const nc_m3  = eps0 * me * omega0 * omega0 / (e * e);
+    const nc_cm3 = nc_m3 / 1e6;
+
+    // Plasma frequency
+    const wpe = Math.sqrt(ne_m3 * e * e / (eps0 * me));  // rad/s
+    const fpe = wpe / (2.0 * Math.PI);                   // Hz
+
+    // Plasma wavelength and skin depth
+    const lambda_p = 2.0 * Math.PI * c / wpe;  // m
+    const skin     = c / wpe;                  // m
+
+    // Ponderomotive energy (eV): Up = (me c^2)(a0^2)/4 (linear pol)
+    // me c^2 = 511 keV
+    const Up_eV = 511e3 * (a0 * a0) / 4.0;
+
+    // Wilks hot electron scaling (keV): Th ≈ 511*(sqrt(1+a0^2)-1)
+    const Th_keV = 511.0 * (Math.sqrt(1.0 + a0*a0) - 1.0);
+
+    // Radiation pressure (Pa): P ≈ 2I/c for reflection, I in W/m^2
+    const Prad_Pa = 2.0 * I_Wm2 / c;
+
+    document.getElementById("nc_out").innerHTML =
+      `<b>Critical density n<sub>c</sub>:</b> ${fmtSci(nc_cm3)} cm⁻³ (λ=${lam_nm} nm)`;
+
+    document.getElementById("ratio_out").innerHTML =
+      `<b>nₑ / n<sub>c</sub>:</b> ${(ne_cm3 / nc_cm3).toFixed(3)}  (nₑ=${fmtSci(ne_cm3)} cm⁻³)`;
+
+    document.getElementById("wpe_out").innerHTML =
+      `<b>ω<sub>pe</sub>, f<sub>pe</sub>:</b> ${fmtSci(wpe)} rad/s, ${fmtSci(fpe)} Hz`;
+
+    document.getElementById("lp_out").innerHTML =
+      `<b>Plasma wavelength λ<sub>p</sub>:</b> ${fmtSci(lambda_p*1e6)} µm`;
+
+    document.getElementById("skin_out").innerHTML =
+      `<b>Skin depth δ:</b> ${fmtSci(skin*1e9)} nm`;
+
+    document.getElementById("up_out").innerHTML =
+      `<b>Ponderomotive energy U<sub>p</sub>:</b> ${fmtSci(Up_eV)} eV`;
+
+    document.getElementById("th_out").innerHTML =
+      `<b>Hot electron scale (Wilks):</b> ${fmtEng(Th_keV, "keV")}`;
+
+    document.getElementById("prad_out").innerHTML =
+      `<b>Radiation pressure (≈ 2I/c):</b> ${fmtSci(Prad_Pa)} Pa`;
+
+    // Small sanity warning for extreme densities
+    if (ne_cm3 / nc_cm3 < 0.01) {
+      warn("Note: nₑ ≪ n_c (underdense). Many solid-target assumptions won’t apply.");
+    } else if (ne_cm3 / nc_cm3 > 1000) {
+      warn("Note: nₑ ≫ n_c (very overdense). If this is a solid, fine — but check your nₑ units.");
+    } else {
+      warn("");
+    }
+  } else {
+    document.getElementById("nc_out").innerHTML = "<b>Critical density n<sub>c</sub>:</b> —";
+    document.getElementById("ratio_out").innerHTML = "<b>nₑ / n<sub>c</sub>:</b> —";
+    document.getElementById("wpe_out").innerHTML = "<b>ω<sub>pe</sub>, f<sub>pe</sub>:</b> —";
+    document.getElementById("lp_out").innerHTML = "<b>Plasma wavelength λ<sub>p</sub>:</b> —";
+    document.getElementById("skin_out").innerHTML = "<b>Skin depth δ = c/ω<sub>pe</sub>:</b> —";
+    document.getElementById("up_out").innerHTML = "<b>Ponderomotive energy U<sub>p</sub>:</b> —";
+    document.getElementById("th_out").innerHTML = "<b>Hot electron scale (Wilks):</b> —";
+    document.getElementById("prad_out").innerHTML = "<b>Radiation pressure (≈ 2I/c):</b> —";
+  }
+}
+
+// auto-run on load
+calc();
+</script>
+
+</body>
+</html>
