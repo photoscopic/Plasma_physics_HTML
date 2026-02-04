@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💘 Emergency Valentine Proposal 💘</title>
+  <style>
+    :root{
+      --bg1:#ffdde1;
+      --bg2:#ee9ca7;
+      --card:#ffffffcc;
+      --text:#2b2b2b;
+      --accent:#ff3b7a;
+      --accent2:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color:var(--text);
+      background: radial-gradient(circle at 20% 20%, var(--bg1), transparent 40%),
+                  radial-gradient(circle at 80% 30%, #ffd1ff, transparent 35%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+    .card{
+      width:min(680px, 92vw);
+      background:var(--card);
+      backdrop-filter: blur(10px);
+      border: 1px solid #ffffff80;
+      border-radius: 22px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.15);
+      position:relative;
+    }
+    h1{
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 40px);
+      letter-spacing: .2px;
+    }
+    .subtitle{
+      margin:0 0 18px;
+      opacity:.85;
+      line-height:1.4;
+    }
+    .meter{
+      height: 14px;
+      border-radius: 999px;
+      background: #00000012;
+      overflow:hidden;
+      margin: 14px 0 18px;
+    }
+    .meter > div{
+      height:100%;
+      width: 12%;
+      background: linear-gradient(90deg, var(--accent), #ff7aa8, #ffd1e1);
+      border-radius: 999px;
+      transition: width .25s ease;
+    }
+    .buttons{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+      align-items:center;
+      position:relative;
+      padding-bottom: 18px;
+    }
+    button{
+      border:0;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 16px;
+      cursor:pointer;
+      font-weight: 650;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      user-select:none;
+    }
+    button:active{ transform: scale(.98); }
+    #yesBtn{
+      background: linear-gradient(135deg, var(--accent), #ff7aa8);
+      color:white;
+      box-shadow: 0 12px 26px rgba(255,59,122,.35);
+    }
+    #yesBtn:hover{ filter: brightness(1.03); transform: translateY(-1px); }
+    #noBtn{
+      background: linear-gradient(135deg, #111827, #374151);
+      color:#fff;
+      box-shadow: 0 12px 26px rgba(17,24,39,.25);
+      position: relative;
+    }
+    .jokes{
+      margin-top: 14px;
+      background: #ffffffa8;
+      border: 1px dashed #00000020;
+      border-radius: 16px;
+      padding: 14px 14px;
+      line-height:1.5;
+    }
+    .jokes b{ color: var(--accent2); }
+    .result{
+      margin-top: 16px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      display:none;
+      border: 1px solid #00000012;
+      background: #f6fff7cc;
+    }
+    .result.show{ display:block; }
+    .tiny{
+      opacity:.75;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    /* Floating hearts */
+    .heart{
+      position: absolute;
+      font-size: 18px;
+      animation: floatUp linear forwards;
+      pointer-events:none;
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,.18));
+    }
+    @keyframes floatUp{
+      from { transform: translateY(0) scale(1); opacity:1; }
+      to   { transform: translateY(-140px) scale(1.6); opacity:0; }
+    }
+
+    /* Confetti burst */
+    .confetti{
+      position: absolute;
+      width: 8px;
+      height: 10px;
+      border-radius: 2px;
+      animation: pop 900ms ease-out forwards;
+      pointer-events:none;
+    }
+    @keyframes pop{
+      0% { transform: translate(0,0) rotate(0deg); opacity:1; }
+      100% { transform: translate(var(--dx), var(--dy)) rotate(720deg); opacity:0; }
+    }
+
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top: 14px;
+      flex-wrap:wrap;
+      opacity:.85;
+      font-size: 13px;
+    }
+    .pill{
+      background:#ffffffa6;
+      border:1px solid #00000010;
+      padding:6px 10px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1>🚨 Valentine’s Day Alert 🚨</h1>
+    <p class="subtitle">
+      My heart has filed a complaint: <b>“Excessive cuteness detected.”</b><br/>
+      Please resolve immediately by selecting an option below.
+    </p>
+
+    <div class="meter" title="Probability of you being awesome">
+      <div id="loveMeter"></div>
+    </div>
+
+    <div class="buttons" id="btnArea">
+      <button id="yesBtn">Yes 😌💖</button>
+      <button id="noBtn">No 😈</button>
+      <span class="tiny">(Try pressing “No”. I dare you.)</span>
+    </div>
+
+    <div class="jokes">
+      <div>💘 <b>Pick-up line:</b> Are you a plasma mirror? Because you just boosted my intensity.</div>
+      <div>🍕 <b>Truth:</b> I love you more than free food at a seminar.</div>
+      <div>🧪 <b>Science fact (very real):</b> Our chemistry has 0% impurities.</div>
+    </div>
+
+    <div class="result" id="result">
+      <h2 style="margin:0 0 6px;">✅ Case Closed: We’re Valentines!</h2>
+      <div id="msg"></div>
+      <div class="tiny">Screenshot this as evidence. Court of Love accepts PNG/JPG only.</div>
+    </div>
+
+    <div class="footer">
+      <div class="pill">Status: <span id="status">Awaiting your decision…</span></div>
+      <div class="pill">Cuteness Level: <span id="cute">∞</span></div>
+    </div>
+  </div>
+
+  <script>
+    const card = document.getElementById("card");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const statusEl = document.getElementById("status");
+    const meter = document.getElementById("loveMeter");
+    const result = document.getElementById("result");
+    const msg = document.getElementById("msg");
+
+    let noCount = 0;
+    let meterVal = 12;
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function setMeter(v){
+      meterVal = clamp(v, 0, 100);
+      meter.style.width = meterVal + "%";
+    }
+
+    function spawnHeart(x, y){
+      const h = document.createElement("div");
+      h.className = "heart";
+      const hearts = ["💖","💘","💝","💗","💞","💕","❤️"];
+      h.textContent = hearts[Math.floor(Math.random()*hearts.length)];
+      h.style.left = x + "px";
+      h.style.top  = y + "px";
+      h.style.animationDuration = (600 + Math.random()*700) + "ms";
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(), 1400);
+    }
+
+    function confettiBurst(x,y){
+      const colors = ["#ff3b7a","#7c3aed","#22c55e","#f59e0b","#06b6d4","#111827"];
+      for(let i=0;i<24;i++){
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = x + "px";
+        c.style.top  = y + "px";
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        const dx = (Math.random()*2-1) * (140 + Math.random()*120);
+        const dy = (Math.random()*2-1) * (120 + Math.random()*180);
+        c.style.setProperty("--dx", dx + "px");
+        c.style.setProperty("--dy", dy + "px");
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(), 1000);
+      }
+    }
+
+    function moveNoButton(){
+      // Move within the card area
+      const rect = card.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      const padding = 18;
+      const maxX = rect.width - btnRect.width - padding;
+      const maxY = rect.height - btnRect.height - padding;
+
+      const x = padding + Math.random() * maxX;
+      const y = padding + Math.random() * maxY;
+
+      // Position relative to card
+      noBtn.style.position = "absolute";
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+    }
+
+    function roast(){
+      const lines = [
+        "No? Bold. Incorrect… but bold.",
+        "The “No” button is currently on vacation.",
+        "Nice try. My heart installed anti-no software.",
+        "Rejecting me? That’s not very Fibonacci of you.",
+        "No detected. Deploying evasive maneuvers."
+      ];
+      return lines[Math.floor(Math.random()*lines.length)];
+    }
+
+    // Ambient hearts on mouse move (subtle)
+    let lastSpawn = 0;
+    window.addEventListener("mousemove", (e)=>{
+      const now = Date.now();
+      if(now - lastSpawn > 110){
+        spawnHeart(e.clientX, e.clientY);
+        lastSpawn = now;
+      }
+    });
+
+    // NO button: runs away + increases meter (because denial is cute)
+    ["mouseenter","click","touchstart"].forEach(evt=>{
+      noBtn.addEventListener(evt, (e)=>{
+        noCount++;
+        statusEl.textContent = roast();
+        setMeter(meterVal + 10);
+        moveNoButton();
+
+        const x = (e.touches?.[0]?.clientX) ?? e.clientX ?? (window.innerWidth/2);
+        const y = (e.touches?.[0]?.clientY) ?? e.clientY ?? (window.innerHeight/2);
+        confettiBurst(x, y);
+      }, {passive:true});
+    });
+
+    // YES button: show final message
+    yesBtn.addEventListener("click", (e)=>{
+      statusEl.textContent = "Approved ✅";
+      setMeter(100);
+      result.classList.add("show");
+
+      const messages = [
+        "You just made my day. Now we must celebrate with snacks. Non-negotiable.",
+        "Yay! Our love is now officially peer-reviewed and accepted with minor revisions (more hugs).",
+        "Congrats! You unlocked the secret achievement: “Certified Valentine”."
+      ];
+      msg.textContent = messages[Math.floor(Math.random()*messages.length)];
+
+      const rect = yesBtn.getBoundingClientRect();
+      const x = rect.left + rect.width/2;
+      const y = rect.top + rect.height/2;
+      confettiBurst(x, y);
+
+      // Spawn lots of hearts
+      for(let i=0;i<40;i++){
+        setTimeout(()=>{
+          spawnHeart(
+            Math.random()*window.innerWidth,
+            (0.55+Math.random()*0.35)*window.innerHeight
+          );
+        }, i*20);
+      }
+
+      // Disable no button (politely)
+      noBtn.disabled = true;
+      noBtn.style.filter = "grayscale(1)";
+      noBtn.textContent = "No (disabled by Love Admin)";
+    });
+
+    // Init
+    setMeter(meterVal);
+  </script>
+</body>
+</html>
